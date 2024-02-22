@@ -8,32 +8,38 @@ def file_exists(filename):
     return True
 
 
-def print_byte_count(filename):
-    byte_count = os.path.getsize(filename)
-    print(byte_count, filename)
+def get_byte_count(filename):
+    return os.path.getsize(filename)
 
 
-def print_line_count(filename):
+def get_line_count(filename):
     with open(filename, "rb") as f:
         line_count = sum(1 for _ in f)
-    print(line_count, filename)
+        return line_count
 
 
-def print_word_count(filename):
+def get_word_count(filename):
     word_count = 0
     with open(filename, "rb") as f:
         for line in f:
             words = line.split()
             word_count += len(words)
-    print(word_count, filename)
+    return word_count
 
 
-def print_character_count(filename):
+def get_character_count(filename):
     character_count = 0
     with open(filename, "rb") as f:
         for line in f:
             character_count += len(line.decode())
-    print(character_count, filename)
+    return character_count
+
+
+def print_message(filename, *args):
+    args = [str(arg) for arg in args if arg is not None]
+    results = " ".join(args)
+    message_to_print = f"{results} {filename}"
+    print(message_to_print)
 
 
 if __name__ == "__main__":
@@ -55,10 +61,18 @@ if __name__ == "__main__":
         raise argparse.ArgumentTypeError(f"The file {args.filename} does not exist.")
 
     if args.c:
-        print_byte_count(args.filename)
-    if args.l:
-        print_line_count(args.filename)
-    if args.w:
-        print_word_count(args.filename)
-    if args.m:
-        print_character_count(args.filename)
+        results = [get_byte_count(args.filename)]
+    elif args.l:
+        results = [get_line_count(args.filename)]
+    elif args.w:
+        results = [get_word_count(args.filename)]
+    elif args.m:
+        results = [get_character_count(args.filename)]
+    else:
+        results = [
+            get_byte_count(args.filename),
+            get_line_count(args.filename),
+            get_word_count(args.filename),
+        ]
+
+    print_message(args.filename, *results)
