@@ -19,6 +19,15 @@ def print_line_count(filename):
     print(line_count, filename)
 
 
+def print_word_count(filename):
+    word_count = 0
+    with open(filename, "r") as f:
+        for line in f:
+            words = line.split()
+            word_count += len(words)
+    print(word_count, filename)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="ccwc",
@@ -27,6 +36,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-c", help="count the number of bytes", action="store_true")
     parser.add_argument("-l", help="count the number of lines", action="store_true")
+    parser.add_argument("-w", help="count the number of words", action="store_true")
     parser.add_argument("filename", help="the filename to be checked")
     args = parser.parse_args()
 
@@ -34,6 +44,8 @@ if __name__ == "__main__":
         raise argparse.ArgumentTypeError(f"The file {args.filename} does not exist.")
 
     if args.c:
-        byte_count = print_byte_count(args.filename)
+        print_byte_count(args.filename)
     if args.l:
-        byte_count = print_line_count(args.filename)
+        print_line_count(args.filename)
+    if args.w:
+        print_word_count(args.filename)
