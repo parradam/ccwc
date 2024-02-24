@@ -87,8 +87,15 @@ if __name__ == "__main__":
         raise argparse.ArgumentTypeError(f"The file {args.filename} does not exist.")
 
     if args.filename:
-        with open(args.filename, "rb") as f:
-            fileAsBytes = f.read()
+        try:
+            with open(args.filename, "rb") as f:
+                fileAsBytes = f.read()
+        except PermissionError:
+            print(f"Incorrect permissions for {args.filename}")
+            sys.exit(1)
+        except OSError:
+            print(f"Could not open {args.filename}")
+            sys.exit(1)
     else:
         fileAsBytes = sys.stdin.buffer.read()
 
@@ -109,5 +116,4 @@ if __name__ == "__main__":
             funcs_to_run.append(get_character_count)
 
     results = process_file(fileAsBytes, funcs_to_run)
-
     print_message(args.filename, results)
