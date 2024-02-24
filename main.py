@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 
 
 def file_exists(filename):
@@ -8,37 +9,56 @@ def file_exists(filename):
     return False
 
 
-def get_byte_count(filename):
-    return os.path.getsize(filename)
+def process_file(fileAsBytes, funcs):
+    results_dict = {}
+    for func in funcs:
+        result = func(fileAsBytes)
+        results_dict.update(result)
+    return results_dict
 
 
-def get_line_count(filename):
-    with open(filename, "rb") as f:
-        line_count = sum(1 for _ in f)
-        return line_count
+def get_byte_count(fileAsBytes):
+    byte_count = len(fileAsBytes)
+    return {"bytes": byte_count}
 
 
-def get_word_count(filename):
+def get_line_count(fileAsBytes):
+    file_content = fileAsBytes.decode("utf-8")
+    line_count = file_content.count("\n")
+    return {"lines": line_count}
+
+
+def get_word_count(fileAsBytes):
+    file_content = fileAsBytes.decode("utf-8")
     word_count = 0
-    with open(filename, "rb") as f:
-        for line in f:
-            words = line.split()
-            word_count += len(words)
-    return word_count
+    for line in file_content.splitlines():
+        words = line.split()
+        word_count += len(words)
+    return {"words": word_count}
 
 
-def get_character_count(filename):
+def get_character_count(fileAsBytes):
+    file_content = fileAsBytes.decode("utf-8")
     character_count = 0
-    with open(filename, "rb") as f:
-        for line in f:
-            character_count += len(line.decode())
-    return character_count
+    for line in file_content:
+        character_count += len(line)
+    return {"characters": character_count}
 
 
-def print_message(filename, *args):
-    args = [str(arg) for arg in args if arg is not None]
-    results = " ".join(args)
-    message_to_print = f"{results} {filename}"
+def print_message(filename, results):
+    print_order = ["lines", "words", "bytes", "characters"]
+    message = []
+
+    for key_to_search in print_order:
+        result = results.get(key_to_search, False)
+
+        if result:
+            message.append(str(result))
+
+    if filename:
+        message.append(filename)
+
+    message_to_print = "\t".join(message)
     print(message_to_print)
 
 
@@ -60,7 +80,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m", "--char", help="count the number of characters", action="store_true"
     )
-    parser.add_argument("filename", help="the filename to be checked")
+    parser.add_argument("filename", nargs="?", help="the filename to be checked")
     args = parser.parse_args()
 
     if args.filename and not file_exists(args.filename):
@@ -68,21 +88,26 @@ if __name__ == "__main__":
 
     if args.filename:
         with open(args.filename, "rb") as f:
-            data = f.read()
-
-    if args.char:
-        results = [get_byte_count(args.filename)]
-    elif args.line:
-        results = [get_line_count(args.filename)]
-    elif args.word:
-        results = [get_word_count(args.filename)]
-    elif args.char:
-        results = [get_character_count(args.filename)]
+            fileAsBytes = f.read()
     else:
-        results = [
-            get_byte_count(args.filename),
-            get_line_count(args.filename),
-            get_word_count(args.filename),
-        ]
+        fileAsBytes = sys.stdin.buffer.read()
 
-    print_message(args.filename, *results)
+    funcs_to_run = []
+
+    if not any([args.byte, args.line, args.word, args.char]):
+        funcs_to_run.append(get_line_count)
+        funcs_to_run.append(get_word_count)
+        funcs_to_run.append(get_byte_count)
+    else:
+        if args.byte:
+            funcs_to_run.append(get_byte_count)
+        if args.line:
+            funcs_to_run.append(get_line_count)
+        if args.word:
+            funcs_to_run.append(get_word_count)
+        if args.char:
+            funcs_to_run.append(get_character_count)
+
+    results = process_file(fileAsBytes, funcs_to_run)
+
+    print_message(args.filename, results)
