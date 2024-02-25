@@ -11,7 +11,7 @@ from file_processing import (
 )
 
 
-def print_message(filename, results):
+def print_message(filename: str, results: dict) -> None:
     print_order = ["lines", "words", "bytes", "characters"]
     message = []
 
@@ -24,7 +24,7 @@ def print_message(filename, results):
     if filename:
         message.append(filename)
 
-    message_to_print = "\t".join(message)
+    message_to_print: str = "\t".join(message)
     print(message_to_print)
 
 
