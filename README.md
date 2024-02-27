@@ -124,8 +124,7 @@ You may wish to alias this to `ccwc`.
 
 ## Authors
 
-- **Adam Parr** - *Provided README Template* -
-    [parradam](https://github.com/parradam)
+- **Adam Parr** - [parradam](https://github.com/parradam)
 
 ## License
 
